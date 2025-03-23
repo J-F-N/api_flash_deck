@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("api_flash_deck")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ed241c4a6c78d9f1195abe3e8cec2928a29a297f")]
 [assembly: System.Reflection.AssemblyProductAttribute("api_flash_deck")]
 [assembly: System.Reflection.AssemblyTitleAttribute("api_flash_deck")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
