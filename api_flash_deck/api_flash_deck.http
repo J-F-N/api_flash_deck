@@ -1,0 +1,6 @@
+@api_flash_deck_HostAddress = http://localhost:5038
+
+GET {{api_flash_deck_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
