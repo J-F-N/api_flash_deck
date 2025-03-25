@@ -15,6 +15,6 @@ public class MongoDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.Entity<FlashCard>().ToCollection("flash_cards");
+        modelBuilder.Entity<FlashCard>().ToCollection("FlashCards");
     }
 }

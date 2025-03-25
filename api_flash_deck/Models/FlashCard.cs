@@ -1,11 +1,14 @@
 using MongoDB.Bson;
+using MongoDB.EntityFrameworkCore;
 
 namespace api_flash_deck.Models;
 
+[Collection("FlashCards")]
 public class FlashCard
 {
-    public ObjectId Id { get; set; }
-    public string UserId { get; set; }
-    public string Prompt { get; set; } 
-    public string Answer { get; set; }
+    public ObjectId Id { get; init; }
+    public int UserId { get; init; }
+    public int DeckId { get; set; }
+    public string Prompt { get; set; } = string.Empty;
+    public string Answer { get; set; } = string.Empty;
 }
