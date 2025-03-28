@@ -17,16 +17,45 @@ public class FlashCardController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet("{id}")]
+    [HttpGet]
+    [Route("/user/{id}")]
     public IActionResult GetByUser([FromRoute] int userId)
     {
         var cards = _service.GetCardsForUser(userId);
 
         if (cards == null)
         {
+            _logger.LogInformation($"No cards found for {userId}");
             return NotFound();
         }
         
         return Ok(cards);
+    }
+
+    [HttpPost]
+    [Route("/add")]
+    public IActionResult AddCard([FromBody] FlashCard card)
+    {
+        throw new NotImplementedException();
+    }
+
+    [HttpDelete]
+    public IActionResult DeleteCard([FromBody] FlashCard card)
+    {
+        var result = _service.DeleteCard(card);
+
+        if (result == null)
+        {
+            NotFound();
+        }
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    [Route("delete/deck/{id}")]
+    public IActionResult DeleteDeck([FromRoute] int deckId)
+    {
+        throw new NotImplementedException();
     }
 }

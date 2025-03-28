@@ -2,6 +2,7 @@ using api_flash_deck.Database;
 using api_flash_deck.Models;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 
 namespace api_flash_deck.Services;
 
@@ -23,17 +24,34 @@ public class FlashCardService : IFlashCardService
         _dbContext.SaveChanges();
     }
 
-    public void DeleteCard(FlashCard card)
+    public FlashCard? DeleteCard(FlashCard card)
     {
-        _dbContext.FlashCards.Remove(card);
+        var deletedCard = _dbContext.FlashCards.FirstOrDefault(entity => entity.Id == card.Id);
+
+        if (deletedCard == null)
+        {
+            return null;
+        }
+        
+        _dbContext.FlashCards.Remove(deletedCard);
         _dbContext.ChangeTracker.DetectChanges();
         _logger.LogInformation(_dbContext.ChangeTracker.DebugView.LongView);
         _dbContext.SaveChanges();
+        
+        return deletedCard;
     }
 
     public void UpdateCard(FlashCard card)
     {
         _dbContext.FlashCards.Update(card);
+        _dbContext.ChangeTracker.DetectChanges();
+        _logger.LogInformation(_dbContext.ChangeTracker.DebugView.LongView);
+        _dbContext.SaveChanges();
+    }
+
+    public void DeleteDeck(List<FlashCard> cardList)
+    {
+        _dbContext.RemoveRange(cardList);
         _dbContext.ChangeTracker.DetectChanges();
         _logger.LogInformation(_dbContext.ChangeTracker.DebugView.LongView);
         _dbContext.SaveChanges();
