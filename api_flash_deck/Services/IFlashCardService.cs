@@ -4,8 +4,8 @@ namespace api_flash_deck.Services;
 
 public interface IFlashCardService
 {
-    IEnumerable<FlashCard> GetCardsForUser(int userId);
-    void AddCard(FlashCard card);
+    List<FlashCard>? GetCardsForUser(int userId);
+    FlashCard? AddCard(FlashCard card);
     FlashCard? DeleteCard(FlashCard card);
-    void UpdateCard(FlashCard card);
+    FlashCard? UpdateCard(FlashCard card);
 }

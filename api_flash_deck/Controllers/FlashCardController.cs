@@ -1,5 +1,6 @@
 using api_flash_deck.Models;
 using api_flash_deck.Services;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api_flash_deck.Controllers;
@@ -9,23 +10,20 @@ namespace api_flash_deck.Controllers;
 public class FlashCardController : ControllerBase
 {
     private readonly IFlashCardService  _service;
-    private readonly ILogger<FlashCardController> _logger;
 
-    public FlashCardController(IFlashCardService service, ILogger<FlashCardController> logger)
+    public FlashCardController(IFlashCardService service)
     {
         _service = service;
-        _logger = logger;
     }
 
     [HttpGet]
-    [Route("/user/{id}")]
+    [Route("/user/{userId}")]
     public IActionResult GetByUser([FromRoute] int userId)
     {
         var cards = _service.GetCardsForUser(userId);
 
         if (cards == null)
         {
-            _logger.LogInformation($"No cards found for {userId}");
             return NotFound();
         }
         
@@ -36,7 +34,9 @@ public class FlashCardController : ControllerBase
     [Route("/add")]
     public IActionResult AddCard([FromBody] FlashCard card)
     {
-        throw new NotImplementedException();
+        var result = _service.AddCard(card);
+        
+        return Ok(result);
     }
 
     [HttpDelete]
@@ -52,10 +52,28 @@ public class FlashCardController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("{id}")]
-    [Route("delete/deck/{id}")]
+    [HttpDelete]
+    [Route("delete/deck/{deckId}")]
     public IActionResult DeleteDeck([FromRoute] int deckId)
     {
         throw new NotImplementedException();
     }
+    
+    [Route("error-development")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public IActionResult HandleErrorDevelopment([FromServices] IWebHostEnvironment env)
+    {
+        if (env.IsDevelopment())
+        {
+            return NotFound();
+        }
+        
+        var exceptionHandlerFeature = HttpContext.Features.Get<IExceptionHandlerFeature>();
+        
+        return Problem(detail: exceptionHandlerFeature.Error.StackTrace, title: exceptionHandlerFeature.Error.Message);
+    }
+
+    [Route("/error")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public IActionResult HandleError() => Problem();
 }
