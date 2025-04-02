@@ -53,10 +53,24 @@ public class FlashCardController : ControllerBase
     }
 
     [HttpDelete]
-    [Route("delete/deck/{deckId}")]
-    public IActionResult DeleteDeck([FromRoute] int deckId)
+    [Route("delete/user/{userId}/deck/{deckId}")]
+    public IActionResult DeleteDeck([FromRoute] int userId, int deckId)
     {
         throw new NotImplementedException();
+    }
+
+    [HttpPut]
+    [Route("/update/card")]
+    public FlashCard? UpdateCard([FromBody] FlashCard card)
+    {
+        var result = _service.UpdateCard(card);
+
+        if (result == null)
+        {
+            NotFound();
+        }
+        
+        return result;
     }
     
     [Route("error-development")]

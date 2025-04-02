@@ -66,20 +66,17 @@ public class FlashCardService : IFlashCardService
 
     public FlashCard? UpdateCard(FlashCard card)
     {
-        var updatedCard = _dbContext.FlashCards.FirstOrDefault(entity => entity.Id == card.Id);
+        var entity = _dbContext.FlashCards.Update(card);
 
-        if (updatedCard == null)
+        if (entity == null)
         {
             return null;
         }
-        
-        _dbContext.FlashCards.Update(card);
         _dbContext.ChangeTracker.DetectChanges();
         _logger.LogInformation(_dbContext.ChangeTracker.DebugView.LongView);
         _dbContext.SaveChanges();
-        _dbContext.Entry(updatedCard).Reload();
         
-        return updatedCard;
+        return card;
     }
 
     public void DeleteDeck(List<FlashCard> cardList)
