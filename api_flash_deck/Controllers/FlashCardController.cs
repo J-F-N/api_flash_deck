@@ -2,6 +2,7 @@ using api_flash_deck.Models;
 using api_flash_deck.Services;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 
 namespace api_flash_deck.Controllers;
 
@@ -40,13 +41,14 @@ public class FlashCardController : ControllerBase
     }
 
     [HttpDelete]
+    [Route("/delete/user/card")]
     public IActionResult DeleteCard([FromBody] FlashCard card)
     {
         var result = _service.DeleteCard(card);
 
         if (result == null)
         {
-            NotFound();
+            return NotFound();
         }
 
         return NoContent();
@@ -56,7 +58,9 @@ public class FlashCardController : ControllerBase
     [Route("delete/user/{userId}/deck/{deckId}")]
     public IActionResult DeleteDeck([FromRoute] int userId, int deckId)
     {
-        throw new NotImplementedException();
+        _service.DeleteDeck(userId, deckId);
+        
+        return NoContent();
     }
 
     [HttpPut]

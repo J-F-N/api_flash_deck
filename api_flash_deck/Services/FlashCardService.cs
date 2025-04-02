@@ -3,8 +3,10 @@ using api_flash_deck.Models;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+using SharpCompress.Common;
 
 namespace api_flash_deck.Services;
 
@@ -12,12 +14,17 @@ public class FlashCardService : IFlashCardService
 {
     private readonly ILogger<FlashCardService> _logger;
     private readonly MongoDbContext _dbContext;
-    
-    
-    
+
+
+    public FlashCardService(ILogger<FlashCardService> logger, MongoDbContext dbContext)
+    {
+        _logger = logger;
+        _dbContext = dbContext;
+    }
+
     public List<FlashCard>? GetCardsForUser(int userId)
     {
-        var cards = _dbContext.FlashCards.Where(f => f.UserId == userId).AsNoTracking().ToList();
+        var cards = _dbContext.FlashCards.Where(card => card.UserId == userId).AsNoTracking().ToList();
 
         if (cards == null)
         {
@@ -36,6 +43,7 @@ public class FlashCardService : IFlashCardService
 
         if (matchingEntries.Count() > 0)
         {
+            _logger.LogInformation($"Cannot Add: Card {card.Id} is already in the database");
             return null;
         }
         
@@ -49,14 +57,17 @@ public class FlashCardService : IFlashCardService
 
     public FlashCard? DeleteCard(FlashCard card)
     {
-        var deletedCard = _dbContext.FlashCards.FirstOrDefault(entity => entity.Id == card.Id);
-
+        var deletedCard = _dbContext.FlashCards.FirstOrDefault(entry => entry.UserId == card.UserId &&
+                                                                                entry.DeckId == card.DeckId &&
+                                                                                entry.Prompt == card.Prompt &&
+                                                                                entry.Answer == card.Answer);
+        
         if (deletedCard == null)
         {
+            _logger.LogInformation($"Cannot Delete: No such card {card}, found in database.");
             return null;
         }
-        
-        _dbContext.FlashCards.Remove(deletedCard);
+        _dbContext.Remove(deletedCard);
         _dbContext.ChangeTracker.DetectChanges();
         _logger.LogInformation(_dbContext.ChangeTracker.DebugView.LongView);
         _dbContext.SaveChanges();
@@ -70,6 +81,7 @@ public class FlashCardService : IFlashCardService
 
         if (entity == null)
         {
+            _logger.LogInformation($"Cannot Update: No card found with id {card.Id} for user {card.UserId}");
             return null;
         }
         _dbContext.ChangeTracker.DetectChanges();
@@ -79,9 +91,10 @@ public class FlashCardService : IFlashCardService
         return card;
     }
 
-    public void DeleteDeck(List<FlashCard> cardList)
+    public void DeleteDeck(int userId, int deckId)
     {
-        _dbContext.RemoveRange(cardList);
+        _dbContext.RemoveRange(_dbContext.FlashCards.Where(card => card.UserId == userId &&
+                                                                   card.DeckId == deckId));
         _dbContext.ChangeTracker.DetectChanges();
         _logger.LogInformation(_dbContext.ChangeTracker.DebugView.LongView);
         _dbContext.SaveChanges();
