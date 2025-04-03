@@ -36,14 +36,15 @@ public class FlashCardService : IFlashCardService
 
     public FlashCard? AddCard(FlashCard card)
     {
-        var matchingEntries = _dbContext.FlashCards.Where(
+        var matchingEntry = _dbContext.FlashCards.FirstOrDefault(
             entry => entry.UserId == card.UserId &&
+                     entry.DeckId == card.DeckId &&
                      entry.Prompt == card.Prompt &&
-                     entry.Answer == card.Answer).ToList();
+                     entry.Answer == card.Answer);
 
-        if (matchingEntries.Count() > 0)
+        if (matchingEntry != null)
         {
-            _logger.LogInformation($"Cannot Add: Card {card.Id} is already in the database");
+            _logger.LogInformation($"Cannot Add: Card {matchingEntry.Id} is already in the database for this deck and user.");
             return null;
         }
         
@@ -57,17 +58,15 @@ public class FlashCardService : IFlashCardService
 
     public FlashCard? DeleteCard(FlashCard card)
     {
-        var deletedCard = _dbContext.FlashCards.FirstOrDefault(entry => entry.UserId == card.UserId &&
-                                                                                entry.DeckId == card.DeckId &&
-                                                                                entry.Prompt == card.Prompt &&
-                                                                                entry.Answer == card.Answer);
+        var deletedCard = _dbContext.FlashCards.FirstOrDefault(entry => entry.Id == card.Id);
         
         if (deletedCard == null)
         {
-            _logger.LogInformation($"Cannot Delete: No such card {card}, found in database.");
+            _logger.LogInformation($"Cannot Delete: No such card ID {card.Id}, found in database.");
             return null;
         }
-        _dbContext.Remove(deletedCard);
+
+        _dbContext.FlashCards.Remove(card);
         _dbContext.ChangeTracker.DetectChanges();
         _logger.LogInformation(_dbContext.ChangeTracker.DebugView.LongView);
         _dbContext.SaveChanges();

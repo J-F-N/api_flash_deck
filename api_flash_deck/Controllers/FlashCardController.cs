@@ -1,3 +1,5 @@
+using api_flash_deck.DTOs;
+using api_flash_deck.Mappers;
 using api_flash_deck.Models;
 using api_flash_deck.Services;
 using Microsoft.AspNetCore.Diagnostics;
@@ -33,9 +35,11 @@ public class FlashCardController : ControllerBase
 
     [HttpPost]
     [Route("/add")]
-    public IActionResult AddCard([FromBody] FlashCard card)
+    public IActionResult AddCard([FromBody] AddCardDto cardDto)
     {
-        var result = _service.AddCard(card);
+        var newCard = CardMapper.MapAddCardDtoToFlashCard(cardDto);
+        
+        var result = _service.AddCard(newCard);
         
         return Ok(result);
     }
