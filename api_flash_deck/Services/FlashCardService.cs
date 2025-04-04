@@ -26,9 +26,9 @@ public class FlashCardService : IFlashCardService
     {
         var cards = _dbContext.FlashCards.Where(card => card.UserId == userId).AsNoTracking().ToList();
 
-        if (cards == null)
+        if (!cards.Any())
         {
-            _logger.LogInformation($"No cards found for user {userId}");
+            _logger.LogInformation($"No cards found for user \"{userId}\"");
         }
         
         return cards;
@@ -37,17 +37,18 @@ public class FlashCardService : IFlashCardService
     public FlashCard? AddCard(FlashCard card)
     {
         var matchingEntry = _dbContext.FlashCards.FirstOrDefault(
-            entry => entry.UserId == card.UserId &&
+            entry => entry.UserId == card.UserId && 
                      entry.DeckId == card.DeckId &&
                      entry.Prompt == card.Prompt &&
                      entry.Answer == card.Answer);
 
         if (matchingEntry != null)
         {
-            _logger.LogInformation($"Cannot Add: Card {matchingEntry.Id} is already in the database for this deck and user.");
+            _logger.LogInformation($"Cannot Add: Card \"{matchingEntry.Prompt}\" is already in the database for this deck and user.");
             return null;
         }
         
+        card.Id = Guid.NewGuid();
         _dbContext.FlashCards.Add(card);
         _dbContext.ChangeTracker.DetectChanges();
         _logger.LogInformation(_dbContext.ChangeTracker.DebugView.LongView);
@@ -62,7 +63,7 @@ public class FlashCardService : IFlashCardService
         
         if (deletedCard == null)
         {
-            _logger.LogInformation($"Cannot Delete: No such card ID {card.Id}, found in database.");
+            _logger.LogInformation($"Cannot Delete: No such card ID \"{card.Id}\", found in database.");
             return null;
         }
 
@@ -76,18 +77,19 @@ public class FlashCardService : IFlashCardService
 
     public FlashCard? UpdateCard(FlashCard card)
     {
-        var entity = _dbContext.FlashCards.Update(card);
+        var entry = _dbContext.FlashCards.FirstOrDefault(entry => entry.Id == card.Id);
 
-        if (entity == null)
+        if (entry == null)
         {
-            _logger.LogInformation($"Cannot Update: No card found with id {card.Id} for user {card.UserId}");
+            _logger.LogInformation($"Cannot Update: No card found with id \"{card.Id}\" for user {card.UserId}");
             return null;
         }
+        var entity = _dbContext.FlashCards.Update(card);
         _dbContext.ChangeTracker.DetectChanges();
         _logger.LogInformation(_dbContext.ChangeTracker.DebugView.LongView);
         _dbContext.SaveChanges();
         
-        return card;
+        return entry;
     }
 
     public void DeleteDeck(int userId, int deckId)

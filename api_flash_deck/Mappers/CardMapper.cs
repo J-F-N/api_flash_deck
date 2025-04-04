@@ -1,5 +1,6 @@
 using api_flash_deck.DTOs;
 using api_flash_deck.Models;
+using MongoDB.Bson;
 
 namespace api_flash_deck.Mappers;
 
@@ -13,6 +14,18 @@ public static class CardMapper
             DeckId = cardDto.DeckId,
             Prompt = cardDto.Prompt,
             Answer = cardDto.Answer,
+        };
+    }
+
+    public static CardDto MapFlashCardToCardDto(FlashCard flashCard)
+    {
+        return new CardDto
+        {
+            Id = flashCard.Id,
+            UserId = flashCard.UserId,
+            DeckId = flashCard.DeckId,
+            Prompt = flashCard.Prompt,
+            Answer = flashCard.Answer,
         };
     }
 }

@@ -25,12 +25,14 @@ public class FlashCardController : ControllerBase
     {
         var cards = _service.GetCardsForUser(userId);
 
-        if (cards == null)
+        if (cards.Count() == 0)
         {
             return NotFound();
         }
         
-        return Ok(cards);
+        var resultDtoList = cards.Select(card => CardMapper.MapFlashCardToCardDto(card));
+        
+        return Ok(resultDtoList);
     }
 
     [HttpPost]
@@ -39,9 +41,16 @@ public class FlashCardController : ControllerBase
     {
         var newCard = CardMapper.MapAddCardDtoToFlashCard(cardDto);
         
-        var result = _service.AddCard(newCard);
+        var resultModel = _service.AddCard(newCard);
+
+        if (resultModel == null)
+        {
+            return BadRequest();
+        }
         
-        return Ok(result);
+        var resultDto = CardMapper.MapFlashCardToCardDto(resultModel);
+        
+        return CreatedAtAction(nameof(AddCard), resultDto);
     }
 
     [HttpDelete]
