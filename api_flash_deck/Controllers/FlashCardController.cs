@@ -4,7 +4,6 @@ using api_flash_deck.Models;
 using api_flash_deck.Services;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
 
 namespace api_flash_deck.Controllers;
 
@@ -21,9 +20,9 @@ public class FlashCardController : ControllerBase
 
     [HttpGet]
     [Route("/user/{userId}")]
-    public IActionResult GetByUser([FromRoute] int userId)
+    public async Task<IActionResult> GetByUserAsync([FromRoute] int userId)
     {
-        var cards = _service.GetCardsForUser(userId);
+        var cards = await _service.GetCardsForUserAsync(userId);
 
         if (cards.Count() == 0)
         {
@@ -37,29 +36,29 @@ public class FlashCardController : ControllerBase
 
     [HttpPost]
     [Route("/add")]
-    public IActionResult AddCard([FromBody] AddCardDto cardDto)
+    public async Task<IActionResult> AddCardAsync([FromBody] AddCardDto cardDto)
     {
         var newCard = CardMapper.MapAddCardDtoToFlashCard(cardDto);
         
-        var resultModel = _service.AddCard(newCard);
+        var resultModel = await _service.AddCardAsync(newCard);
 
         if (resultModel == null)
         {
-            return BadRequest();
+            return BadRequest("This card already exists in the deck or you have reached the max of 50 cards per user.");
         }
         
         var resultDto = CardMapper.MapFlashCardToCardDto(resultModel);
         
-        return CreatedAtAction(nameof(AddCard), resultDto);
+        return CreatedAtAction(nameof(AddCardAsync), resultDto);
     }
 
     [HttpDelete]
-    [Route("/delete/user/card")]
-    public IActionResult DeleteCard([FromBody] FlashCard card)
+    [Route("/delete/card/{cardId}")]
+    public async Task<IActionResult> DeleteCardAsync([FromRoute] Guid cardId)
     {
-        var result = _service.DeleteCard(card);
+        var deletedCard = await _service.DeleteCardAsync(cardId);
 
-        if (result == null)
+        if (deletedCard == null)
         {
             return NotFound();
         }
@@ -69,30 +68,32 @@ public class FlashCardController : ControllerBase
 
     [HttpDelete]
     [Route("delete/user/{userId}/deck/{deckId}")]
-    public IActionResult DeleteDeck([FromRoute] int userId, int deckId)
+    public async Task<IActionResult> DeleteDeckAsync([FromRoute] int userId, int deckId)
     {
-        _service.DeleteDeck(userId, deckId);
+        await _service.DeleteDeckAsync(userId, deckId);
         
         return NoContent();
     }
 
     [HttpPut]
     [Route("/update/card")]
-    public FlashCard? UpdateCard([FromBody] FlashCard card)
+    public async Task<IActionResult> UpdateCardAsync([FromBody] FlashCard card)
     {
-        var result = _service.UpdateCard(card);
-
-        if (result == null)
+        var modelResult = await _service.UpdateCardAsync(card);
+        
+        if (modelResult == null)
         {
-            NotFound();
+            return NotFound();
         }
         
-        return result;
+        var result = CardMapper.MapFlashCardToCardDto(modelResult);
+        
+        return Ok(result);
     }
     
     [Route("error-development")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public IActionResult HandleErrorDevelopment([FromServices] IWebHostEnvironment env)
+    public IActionResult HandleErrorDevelopmentAsync([FromServices] IWebHostEnvironment env)
     {
         if (env.IsDevelopment())
         {

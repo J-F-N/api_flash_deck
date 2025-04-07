@@ -14,6 +14,8 @@ public class FlashCard
     ObjectId Identity { get; set; }
     public int UserId { get; set; }
     public int DeckId { get; set; }
+    [MaxLength(100)]
     public string Prompt { get; set; } = string.Empty;
+    [MaxLength(200)]
     public string Answer { get; set; } = string.Empty;
 }
