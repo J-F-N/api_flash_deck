@@ -2,11 +2,13 @@ using api_flash_deck.DTOs;
 using api_flash_deck.Mappers;
 using api_flash_deck.Models;
 using api_flash_deck.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api_flash_deck.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("/cards")]
 public class FlashCardController : ControllerBase

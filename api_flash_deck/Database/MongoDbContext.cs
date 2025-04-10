@@ -1,11 +1,10 @@
 using api_flash_deck.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ValueGeneration;
-using MongoDB.EntityFrameworkCore.Extensions;
 
 namespace api_flash_deck.Database;
 
-public class MongoDbContext : DbContext
+public class MongoDbContext : IdentityDbContext<AppUser>
 {
     public DbSet<FlashCard> FlashCards { get; init; }
 
