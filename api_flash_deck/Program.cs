@@ -17,7 +17,7 @@ builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("Mo
 builder.Services.AddDbContext<MongoDbContext>(options =>
     options.UseMongoDB(mongoDbSettings.AtlasURI ?? "", mongoDbSettings.DatabaseName ?? ""));
 
-builder.Services.AddIdentityApiEndpoints<AppUserIdentity>(options =>
+builder.Services.AddIdentityApiEndpoints<AppUser>(options =>
     {
         options.Password.RequireDigit = true;
         options.Password.RequireLowercase = true;
@@ -49,7 +49,7 @@ else
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-app.MapIdentityApi<AppUserIdentity>();
+app.MapIdentityApi<AppUser>();
 app.MapControllers();
 
 
