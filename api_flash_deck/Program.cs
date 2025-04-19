@@ -1,7 +1,6 @@
 using api_flash_deck.Database;
 using api_flash_deck.Models;
 using api_flash_deck.Services;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,21 +11,13 @@ builder.Services.AddScoped<IFlashCardService, FlashCardService>();
 
 // Configure dbcontext for datastore and identity management.
 var mongoDbSettings = builder.Configuration.GetSection("MongoDbSettings").Get<MongoDbSettings>();
+
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDbSettings"));
+
 builder.Services.AddDbContext<MongoDbContext>(options =>
     options.UseMongoDB(mongoDbSettings.AtlasURI ?? "", mongoDbSettings.DatabaseName ?? ""));
 
-builder.Services.AddAuthentication(options =>
-{
-
-})
-.AddCookie(options =>
-{
-    options.LoginPath = "/login";
-    options.LogoutPath = "/logout";
-});
-
-builder.Services.AddIdentityApiEndpoints<AppUser>(options =>
+builder.Services.AddIdentityApiEndpoints<AppUserIdentity>(options =>
     {
         options.Password.RequireDigit = true;
         options.Password.RequireLowercase = true;
@@ -35,6 +26,7 @@ builder.Services.AddIdentityApiEndpoints<AppUser>(options =>
         options.Password.RequiredLength = 8;
     })
     .AddEntityFrameworkStores<MongoDbContext>();
+
 
 // Add swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -57,7 +49,7 @@ else
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-app.MapIdentityApi<AppUser>();
+app.MapIdentityApi<AppUserIdentity>();
 app.MapControllers();
 
 
